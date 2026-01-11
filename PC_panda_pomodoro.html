@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>立体パンダ ポモドーロタイマー</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap');
+body{
+  font-family:'Baloo 2', cursive;
+  background: linear-gradient(160deg, #c0f0c0, #a0d0a0);
+  display:flex; justify-content:center; align-items:center;
+  height:100vh; overflow:hidden; position:relative; margin:0;
+}
+.bamboo{ position:absolute; width:15px; height:120px; background:#2e8b57; border-radius:10px; z-index:0; }
+.bamboo::before, .bamboo::after{
+  content:""; position:absolute; width:35px; height:10px; background:#3cb371; border-radius:5px; left:-10px;
+}
+.bamboo::before{ top:15px; transform: rotate(15deg); }
+.bamboo::after{ bottom:15px; transform: rotate(-15deg); }
+
+.panda-face{
+  position:relative; width:300px; height:300px;
+  background: radial-gradient(circle at 50% 40%, #fff, #ddd);
+  border-radius:50%; z-index:2; display:flex; flex-direction: column;
+  justify-content:center; align-items:center;
+  box-shadow: inset -8px -8px 20px rgba(0,0,0,0.2), 0 12px 24px rgba(0,0,0,0.25);
+}
+.ear{
+  position:absolute; width:100px; height:100px;
+  background: radial-gradient(circle at 30% 30%, #222, #111);
+  border-radius:50%; top:0; z-index:-1;
+}
+.ear.left{ left:0; transform:translate(-10%, -10%); }
+.ear.right{ right:0; transform:translate(10%, -10%); }
+
+.cheek{
+  position:absolute; width:60px; height:30px; background:#ffb6c1;
+  border-radius:50%; top:150px; opacity:0.4;
+}
+.cheek.left{ left:30px; }
+.cheek.right{ right:30px; }
+
+#time{ font-size:50px; color:#111; margin-bottom:15px; z-index:10; position:relative; }
+.controls{ z-index:10; position:relative; text-align:center; }
+input{ width:90px; font-size:20px; text-align:center; border-radius:12px; border:none; margin-bottom:12px; }
+button{
+  font-family:'Baloo 2', cursive; font-size:16px; padding:8px 20px;
+  margin:3px; border:none; border-radius:999px; cursor:pointer;
+}
+.start{background:#4caf50;color:#fff;}
+.stop{background:#666;color:#fff;}
+.reset{background:#333;color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="bamboo" style="top:5%; left:10%;"></div>
+<div class="bamboo" style="top:25%; left:30%; height:150px;"></div>
+<div class="bamboo" style="top:15%; right:15%; height:180px;"></div>
+<div class="bamboo" style="bottom:10%; left:20%; height:140px;"></div>
+<div class="bamboo" style="bottom:15%; right:25%; height:160px;"></div>
+
+<div class="panda-face">
+  <div class="ear left"></div>
+  <div class="ear right"></div>
+  <div class="cheek left"></div>
+  <div class="cheek right"></div>
+
+  <div id="time">25:00</div>
+  <div class="controls">
+    <input id="minutes" type="number" value="25" min="1"> min<br>
+    <button class="start" onclick="start()">Start</button>
+    <button class="stop" onclick="stopTimer()">Stop</button>
+    <button class="reset" onclick="reset()">Reset</button>
+  </div>
+</div>
+
+<script>
+let seconds=1500;
+let timer=null;
+
+function meow(){
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(); const g=ctx.createGain();
+  o.frequency.setValueAtTime(650,ctx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(260,ctx.currentTime+0.7);
+  g.gain.setValueAtTime(0.2,ctx.currentTime);
+  g.gain.linearRampToValueAtTime(0,ctx.currentTime+0.7);
+  o.connect(g).connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+0.7);
+}
+
+function start(){
+  if(timer) return;
+  seconds=document.getElementById("minutes").value*60;
+  timer=setInterval(()=>{
+    seconds--;
+    if(seconds<0){ stopTimer(); meow(); return; }
+    let m=String(Math.floor(seconds/60)).padStart(2,'0');
+    let s=String(seconds%60).padStart(2,'0');
+    document.getElementById("time").textContent=`${m}:${s}`;
+  },1000);
+}
+
+function stopTimer(){ clearInterval(timer); timer=null; }
+
+function reset(){
+  stopTimer();
+  let m=document.getElementById("minutes").value;
+  document.getElementById("time").textContent=String(m).padStart(2,'0')+":00";
+}
+
+function spawnLittlePanda() {
+  const p = document.createElement('div');
+  const side = Math.random() > 0.5 ? 'left' : 'right';
+  p.style = `position:absolute; bottom:-70px; ${side}:-70px; font-size:60px; transition:1.5s; z-index:1; cursor:default;`;
+  p.innerHTML = '🐼';
+  document.body.appendChild(p);
+  setTimeout(() => { p.style.bottom = '20px'; p.style[side] = '20px'; }, 100);
+  setTimeout(() => { p.style.bottom = '-90px'; p.style[side] = '-90px'; setTimeout(()=>p.remove(), 1500); }, 3500);
+}
+setInterval(() => { if(Math.random() > 0.6) spawnLittlePanda(); }, 6000);
+</script>
+</body>
+</html>
